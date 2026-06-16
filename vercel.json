@@ -1,0 +1,18 @@
+{
+  "functions": {
+    "api/analyze.py": {
+      "runtime": "@vercel/python",
+      "maxDuration": 10
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/analyze",
+      "destination": "/api/analyze.py"
+    },
+    {
+      "source": "/api/health",
+      "destination": "/api/analyze.py"
+    }
+  ]
+}
