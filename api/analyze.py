@@ -35,6 +35,33 @@ async def health():
     return {"status": "ok", "service": "ResumeScanner"}
 
 
+@app.post("/api/parse")
+async def parse_file(file: UploadFile = File(...)):
+    if not file.filename:
+        return {"error": "No file provided."}
+
+    ext = os.path.splitext(file.filename)[1].lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        return {"error": f"Unsupported file format: {ext}. Please upload a PDF or DOCX file."}
+
+    contents = await file.read()
+    if len(contents) > MAX_FILE_SIZE:
+        return {"error": f"File too large ({len(contents) / 1024 / 1024:.1f}MB). Maximum allowed size is 5MB."}
+
+    try:
+        text = parse_resume(contents, file.filename)
+    except Exception as e:
+        return {"error": f"Failed to parse file: {str(e)}"}
+
+    if not text.strip():
+        return {"error": "Could not extract text from the file."}
+
+    if len(text) > MAX_JD_LENGTH:
+        text = text[:MAX_JD_LENGTH]
+
+    return {"text": text, "filename": file.filename, "word_count": len(text.split())}
+
+
 @app.post("/api/analyze")
 async def analyze_resume(
     file: UploadFile = File(...),

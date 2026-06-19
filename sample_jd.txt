@@ -1,0 +1,56 @@
+Senior Data Analyst
+
+Location: Remote / San Francisco, CA
+Type: Full-time
+
+About the Role
+We are looking for a Senior Data Analyst to join our analytics team. You will work closely with product, engineering, and business stakeholders to drive data-informed decisions across the organization. You will own end-to-end analytics projects — from defining metrics and building data pipelines to delivering actionable insights through dashboards and presentations.
+
+Responsibilities
+- Analyze large datasets to identify trends, patterns, and opportunities for product and business growth
+- Build and maintain dashboards and reports using Tableau, Power BI, or Looker
+- Write complex SQL queries to extract and transform data from Snowflake, Redshift, and PostgreSQL
+- Develop and maintain ETL pipelines using Python, Airflow, and dbt
+- Design and analyze A/B tests, including sample size calculation, statistical significance testing, and result interpretation
+- Perform statistical modeling and predictive analytics using Python (pandas, NumPy, scikit-learn, statsmodels)
+- Collaborate with data engineering to improve data quality, governance, and documentation
+- Present findings and recommendations to senior leadership and non-technical stakeholders
+- Mentor junior analysts on analytical best practices, SQL optimization, and experimental design
+- Support self-serve analytics by creating curated datasets and Looker explores
+
+Required Qualifications
+- 5+ years of experience in data analysis, business intelligence, or data science
+- Expert-level SQL skills with experience across multiple database platforms (PostgreSQL, Snowflake, Redshift)
+- Strong proficiency in Python for data analysis, including pandas, NumPy, and matplotlib/seaborn
+- Hands-on experience with BI tools such as Tableau, Looker, or Power BI
+- Experience designing and analyzing A/B tests and experiments
+- Solid understanding of statistical concepts: hypothesis testing, regression, distributions, confidence intervals
+- Experience with ETL/ELT pipelines and workflow orchestration (Airflow, dbt, or Prefect)
+- Strong communication skills with the ability to present technical findings to non-technical audiences
+- Bachelor's degree in Statistics, Mathematics, Computer Science, Economics, or a related quantitative field
+
+Preferred Qualifications
+- Experience with cloud data warehouses (Snowflake, BigQuery, Redshift)
+- Familiarity with Git, CI/CD, and software engineering best practices
+- Experience with machine learning libraries (scikit-learn, XGBoost, LightGBM)
+- Knowledge of data modeling, star schemas, and dimensional modeling
+- Experience with Amplitude, Mixpanel, or Google Analytics for product analytics
+- Master's degree in a quantitative field
+
+Tech Stack You'll Work With
+- Languages: Python, SQL
+- Databases: PostgreSQL, Snowflake, Redshift
+- BI: Tableau, Looker, Power BI
+- Orchestration: Airflow, dbt
+- Cloud: AWS (S3, Redshift, EC2)
+- Analytics: Amplitude, Mixpanel
+- Version Control: Git, GitHub
+
+What We Offer
+- Competitive salary: $140,000 - $180,000
+- Equity package
+- Health, dental, and vision insurance
+- 401(k) with company match
+- Flexible PTO
+- Remote-first culture with quarterly offsites
+- Learning and development budget ($2,000/year)

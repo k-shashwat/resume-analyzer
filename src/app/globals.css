@@ -49,72 +49,72 @@
 }
 
 :root {
-  --background: oklch(0.99 0 0);
-  --foreground: oklch(0.15 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.15 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.15 0 0);
-  --primary: oklch(0.55 0.18 265);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.96 0 0);
-  --secondary-foreground: oklch(0.2 0 0);
-  --muted: oklch(0.96 0 0);
-  --muted-foreground: oklch(0.5 0 0);
-  --accent: oklch(0.55 0.14 185);
-  --accent-foreground: oklch(0.99 0 0);
-  --destructive: oklch(0.55 0.22 25);
-  --border: oklch(0.9 0 0);
-  --input: oklch(0.9 0 0);
-  --ring: oklch(0.55 0.18 265);
-  --chart-1: oklch(0.55 0.18 265);
-  --chart-2: oklch(0.55 0.14 185);
-  --chart-3: oklch(0.55 0.18 160);
-  --chart-4: oklch(0.55 0.18 290);
-  --chart-5: oklch(0.55 0.18 340);
+  --background: #fcfcfc;
+  --foreground: #0b0b0b;
+  --card: #ffffff;
+  --card-foreground: #0b0b0b;
+  --popover: #ffffff;
+  --popover-foreground: #0b0b0b;
+  --primary: #3c68d9;
+  --primary-foreground: #fcfcfc;
+  --secondary: #f2f2f2;
+  --secondary-foreground: #161616;
+  --muted: #f2f2f2;
+  --muted-foreground: #636363;
+  --accent: #008a7c;
+  --accent-foreground: #fcfcfc;
+  --destructive: #d40924;
+  --border: #dedede;
+  --input: #dedede;
+  --ring: #3c68d9;
+  --chart-1: #3c68d9;
+  --chart-2: #008a7c;
+  --chart-3: #008f4a;
+  --chart-4: #7457d1;
+  --chart-5: #b13b92;
   --radius: 0.625rem;
-  --sidebar: oklch(0.98 0 0);
-  --sidebar-foreground: oklch(0.15 0 0);
-  --sidebar-primary: oklch(0.55 0.18 265);
-  --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.96 0 0);
-  --sidebar-accent-foreground: oklch(0.2 0 0);
-  --sidebar-border: oklch(0.9 0 0);
-  --sidebar-ring: oklch(0.55 0.18 265);
+  --sidebar: #f8f8f8;
+  --sidebar-foreground: #0b0b0b;
+  --sidebar-primary: #3c68d9;
+  --sidebar-primary-foreground: #fcfcfc;
+  --sidebar-accent: #f2f2f2;
+  --sidebar-accent-foreground: #161616;
+  --sidebar-border: #dedede;
+  --sidebar-ring: #3c68d9;
 }
 
 .dark {
-  --background: oklch(0.13 0 0);
-  --foreground: oklch(0.96 0 0);
-  --card: oklch(0.17 0 0);
-  --card-foreground: oklch(0.96 0 0);
-  --popover: oklch(0.17 0 0);
-  --popover-foreground: oklch(0.96 0 0);
-  --primary: oklch(0.65 0.18 265);
-  --primary-foreground: oklch(0.13 0 0);
-  --secondary: oklch(0.22 0 0);
-  --secondary-foreground: oklch(0.96 0 0);
-  --muted: oklch(0.22 0 0);
-  --muted-foreground: oklch(0.6 0 0);
-  --accent: oklch(0.55 0.12 185);
-  --accent-foreground: oklch(0.13 0 0);
-  --destructive: oklch(0.65 0.22 25);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.65 0.18 265);
-  --chart-1: oklch(0.65 0.18 265);
-  --chart-2: oklch(0.55 0.14 185);
-  --chart-3: oklch(0.55 0.18 160);
-  --chart-4: oklch(0.65 0.18 290);
-  --chart-5: oklch(0.65 0.18 340);
-  --sidebar: oklch(0.17 0 0);
-  --sidebar-foreground: oklch(0.96 0 0);
-  --sidebar-primary: oklch(0.65 0.18 265);
-  --sidebar-primary-foreground: oklch(0.13 0 0);
-  --sidebar-accent: oklch(0.22 0 0);
-  --sidebar-accent-foreground: oklch(0.96 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.65 0.18 265);
+  --background: #070707;
+  --foreground: #f2f2f2;
+  --card: #0f0f0f;
+  --card-foreground: #f2f2f2;
+  --popover: #0f0f0f;
+  --popover-foreground: #f2f2f2;
+  --primary: #5888fc;
+  --primary-foreground: #070707;
+  --secondary: #1b1b1b;
+  --secondary-foreground: #f2f2f2;
+  --muted: #1b1b1b;
+  --muted-foreground: #808080;
+  --accent: #00877b;
+  --accent-foreground: #070707;
+  --destructive: #f94144;
+  --border: rgba(255,255,255,0.1);
+  --input: rgba(255,255,255,0.15);
+  --ring: #5888fc;
+  --chart-1: #5888fc;
+  --chart-2: #008a7c;
+  --chart-3: #008f4a;
+  --chart-4: #9076f3;
+  --chart-5: #d35bb1;
+  --sidebar: #0f0f0f;
+  --sidebar-foreground: #f2f2f2;
+  --sidebar-primary: #5888fc;
+  --sidebar-primary-foreground: #070707;
+  --sidebar-accent: #1b1b1b;
+  --sidebar-accent-foreground: #f2f2f2;
+  --sidebar-border: rgba(255,255,255,0.1);
+  --sidebar-ring: #5888fc;
 }
 
 @layer base {
@@ -127,4 +127,9 @@
   html {
     @apply font-sans;
   }
+}
+
+@page {
+  margin: 0.5in;
+  size: A4;
 }

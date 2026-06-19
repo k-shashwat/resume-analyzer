@@ -11,6 +11,10 @@
       "destination": "/api/analyze.py"
     },
     {
+      "source": "/api/parse",
+      "destination": "/api/analyze.py"
+    },
+    {
       "source": "/api/health",
       "destination": "/api/analyze.py"
     }

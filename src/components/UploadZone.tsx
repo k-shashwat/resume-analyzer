@@ -1,6 +1,6 @@
 "use client"
 
-import { Upload, FileText, X } from "lucide-react"
+import { Upload, FileText, X, Loader2 } from "lucide-react"
 import { useRef, useState, type DragEvent, type ChangeEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -142,10 +142,13 @@ export function UploadZone({ onAnalyze, loading, error }: UploadZoneProps) {
       )}
 
       <div className="space-y-2">
-        <label className="text-sm font-medium text-foreground">
-          Job Description{" "}
-          <span className="text-muted-foreground font-normal">(optional)</span>
-        </label>
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium text-foreground">
+            Job Description{" "}
+            <span className="text-muted-foreground font-normal">(optional)</span>
+          </label>
+          <JDUploadButton onText={(t) => setJobDescription(t)} />
+        </div>
         <Textarea
           placeholder="Paste the job description here to match keywords and identify skill gaps..."
           value={jobDescription}
@@ -175,5 +178,58 @@ export function UploadZone({ onAnalyze, loading, error }: UploadZoneProps) {
         )}
       </Button>
     </div>
+  )
+}
+
+function JDUploadButton({ onText }: { onText: (text: string) => void }) {
+  const [parsing, setParsing] = useState(false)
+  const jdInputRef = useRef<HTMLInputElement>(null)
+
+  async function handleJDFile(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setParsing(true)
+
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      const res = await fetch("/api/parse", { method: "POST", body: formData })
+      const data = await res.json()
+      if (data.text) {
+        onText(data.text.substring(0, 5000))
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setParsing(false)
+      if (jdInputRef.current) jdInputRef.current.value = ""
+    }
+  }
+
+  return (
+    <>
+      <input
+        ref={jdInputRef}
+        type="file"
+        accept=".pdf,.docx"
+        onChange={handleJDFile}
+        className="hidden"
+      />
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="text-xs gap-1.5 text-muted-foreground"
+        onClick={() => jdInputRef.current?.click()}
+        disabled={parsing}
+      >
+        {parsing ? (
+          <Loader2 className="h-3 w-3 animate-spin" />
+        ) : (
+          <Upload className="h-3 w-3" />
+        )}
+        {parsing ? "Parsing..." : "Upload JD"}
+      </Button>
+    </>
   )
 }

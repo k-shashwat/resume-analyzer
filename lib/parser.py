@@ -7,20 +7,37 @@ from pdfplumber.utils.exceptions import PdfminerException
 from docx import Document
 
 
+def _words_to_lines(words: list[dict]) -> str:
+    if not words:
+        return ""
+    lines: list[list[dict]] = []
+    sorted_words = sorted(words, key=lambda w: (round(w["top"], 0), w["x0"]))
+    current_line = [sorted_words[0]]
+    for w in sorted_words[1:]:
+        if abs(w["top"] - current_line[-1]["top"]) <= 3:
+            current_line.append(w)
+        else:
+            lines.append(current_line)
+            current_line = [w]
+    if current_line:
+        lines.append(current_line)
+    output_lines: list[str] = []
+    for line_words in lines:
+        line_words.sort(key=lambda w: w["x0"])
+        output_lines.append(" ".join(w["text"] for w in line_words))
+    return "\n".join(output_lines)
+
+
 def parse_pdf(file_bytes: bytes) -> str:
     try:
-        extracted = []
+        page_texts: list[str] = []
         with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
             for page in pdf.pages:
-                text = page.extract_text()
-                if text:
-                    extracted.append(text)
-            if not extracted:
-                for page in pdf.pages:
-                    words = page.extract_words()
-                    if words:
-                        extracted.append(" ".join(w["text"] for w in words))
-        text = "\n".join(extracted)
+                words = page.extract_words()
+                line_text = _words_to_lines(words)
+                if line_text:
+                    page_texts.append(line_text)
+        text = "\n".join(page_texts)
         text = re.sub(r"[^\S\n]+", " ", text)
         text = re.sub(r"\n{3,}", "\n\n", text)
         return text.strip() if text.strip() else ""

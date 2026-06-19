@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { ScoreRadar } from "@/components/ScoreRadar"
 import { DimensionCard } from "@/components/DimensionCard"
+import { DownloadPDF } from "@/components/DownloadPDF"
 import { cn } from "@/lib/utils"
 
 interface Dimension {
@@ -204,7 +205,8 @@ export function ResultsDashboard({ result, onReset }: ResultsDashboardProps) {
         }}
       />
 
-      <div className="flex justify-center pt-4">
+      <div className="flex justify-center pt-4 gap-4">
+        <DownloadPDF result={result} />
         <Button onClick={onReset} variant="outline" size="lg" className="gap-2">
           <RefreshCw className="h-4 w-4" />
           Analyze Another Resume
