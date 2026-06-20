@@ -613,7 +613,6 @@ ACRONYM_GROUPS: List[List[str]] = [
     ["edc", "electronic data capture"],
     ["ctms", "clinical trial management system"],
     ["rando", "randomization", "randomized controlled trial", "rct"],
-    ["gcp", "good clinical practice"],
     ["glp", "good laboratory practice"],
     ["gmp", "good manufacturing practice"],
     ["ndc", "national drug code"],
