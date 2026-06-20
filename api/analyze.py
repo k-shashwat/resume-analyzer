@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
 
-from lib.parser import parse_resume
+from lib.parser import parse_resume, extract_email, extract_phone
 from lib.analyzer.ats import score_ats_compatibility
 from lib.analyzer.keywords import match_keywords
 from lib.analyzer.sections import analyze_sections
@@ -96,7 +96,7 @@ async def analyze_resume(
         job_description = job_description[:MAX_JD_LENGTH]
 
     ats = score_ats_compatibility(text, contents, file.filename)
-    sections = analyze_sections(text)
+    sections = analyze_sections(text, has_contact_info=bool(extract_email(text) or extract_phone(text)))
     verbs = score_verbs_and_quantification(text)
     keywords = match_keywords(text, job_description)
     skills = identify_skill_gaps(text, job_description)

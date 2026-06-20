@@ -18,7 +18,7 @@ def _levenshtein(s1: str, s2: str) -> int:
     return prev[-1]
 
 
-def analyze_sections(text: str) -> dict:
+def analyze_sections(text: str, has_contact_info: bool = False) -> dict:
     lines = text.split("\n")
     found_sections = {}
     section_order = []
@@ -47,6 +47,15 @@ def analyze_sections(text: str) -> dict:
                 "section_type": "expected" if best_match in SECTIONS_EXPECTED else "optional",
             }
             section_order.append(best_match)
+
+    if has_contact_info and "contact" not in found_sections:
+        found_sections["contact"] = {
+            "line_number": 0,
+            "matched_text": "(detected via email/phone)",
+            "canonical_name": "Contact",
+            "section_type": "expected",
+        }
+        section_order.insert(0, "contact")
 
     found_expected = [s for s in SECTIONS_EXPECTED if s in found_sections]
     missing_expected = [s for s in SECTIONS_EXPECTED if s not in found_sections]

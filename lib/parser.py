@@ -7,25 +7,40 @@ from pdfplumber.utils.exceptions import PdfminerException
 from docx import Document
 
 
-def _words_to_lines(words: list[dict]) -> str:
-    if not words:
+WORD_GAP_THRESHOLD = 1.5
+LINE_GAP_THRESHOLD = 3.0
+
+
+def _group_chars_into_lines(chars: list[dict]) -> str:
+    """Group characters into lines and words, inserting spaces at word boundaries."""
+    if not chars:
         return ""
-    lines: list[list[dict]] = []
-    sorted_words = sorted(words, key=lambda w: (round(w["top"], 0), w["x0"]))
-    current_line = [sorted_words[0]]
-    for w in sorted_words[1:]:
-        if abs(w["top"] - current_line[-1]["top"]) <= 3:
-            current_line.append(w)
-        else:
-            lines.append(current_line)
-            current_line = [w]
+    chars_sorted = sorted(chars, key=lambda c: (round(c["top"], 0), c["x0"]))
+    lines: list[list[str]] = []
+    current_line: list[str] = []
+    current_word: list[str] = []
+    prev_char: dict | None = None
+    for c in chars_sorted:
+        if prev_char and abs(c["top"] - prev_char["top"]) > LINE_GAP_THRESHOLD:
+            if current_word:
+                current_line.append("".join(current_word))
+                current_word = []
+            if current_line:
+                lines.append(current_line)
+                current_line = []
+        if prev_char and abs(c["top"] - prev_char["top"]) <= LINE_GAP_THRESHOLD:
+            gap = c["x0"] - prev_char["x1"]
+            if gap > WORD_GAP_THRESHOLD:
+                if current_word:
+                    current_line.append("".join(current_word))
+                    current_word = []
+        current_word.append(c["text"])
+        prev_char = c
+    if current_word:
+        current_line.append("".join(current_word))
     if current_line:
         lines.append(current_line)
-    output_lines: list[str] = []
-    for line_words in lines:
-        line_words.sort(key=lambda w: w["x0"])
-        output_lines.append(" ".join(w["text"] for w in line_words))
-    return "\n".join(output_lines)
+    return "\n".join(" ".join(line) for line in lines)
 
 
 def parse_pdf(file_bytes: bytes) -> str:
@@ -33,8 +48,7 @@ def parse_pdf(file_bytes: bytes) -> str:
         page_texts: list[str] = []
         with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
             for page in pdf.pages:
-                words = page.extract_words()
-                line_text = _words_to_lines(words)
+                line_text = _group_chars_into_lines(page.chars)
                 if line_text:
                     page_texts.append(line_text)
         text = "\n".join(page_texts)

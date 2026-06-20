@@ -14,7 +14,7 @@ def _get_nlp():
     return nlp
 
 
-BULLET_MARKERS = re.compile(r"^[\s•\-\*\▸\▪\◦\‣\⦁\⏺]+")
+BULLET_MARKERS = re.compile(r"^[\s•\-\*\▸\▪\◦\‣\⦁\⏺\u2013\u2014]+")
 
 
 def _extract_bullet_points(text: str) -> list:
