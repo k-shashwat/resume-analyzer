@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 from lib.parser import parse_resume, extract_email, extract_phone
+from lib.data.acronyms import add_runtime_groups, reset_runtime_groups, parse_acronyms_from_text, set_domain
 from lib.analyzer.ats import score_ats_compatibility
 from lib.analyzer.keywords import match_keywords
 from lib.analyzer.sections import analyze_sections
@@ -66,6 +67,7 @@ async def parse_file(file: UploadFile = File(...)):
 async def analyze_resume(
     file: UploadFile = File(...),
     job_description: Optional[str] = Form(None),
+    domain: Optional[str] = Form(None),
 ):
     if not file.filename:
         return {"error": "No file provided."}
@@ -95,11 +97,18 @@ async def analyze_resume(
     if job_description and len(job_description) > MAX_JD_LENGTH:
         job_description = job_description[:MAX_JD_LENGTH]
 
+    if job_description and job_description.strip():
+        add_runtime_groups(parse_acronyms_from_text(job_description))
+
+    set_domain(domain)
+
     ats = score_ats_compatibility(text, contents, file.filename)
     sections = analyze_sections(text, has_contact_info=bool(extract_email(text) or extract_phone(text)))
     verbs = score_verbs_and_quantification(text)
     keywords = match_keywords(text, job_description)
-    skills = identify_skill_gaps(text, job_description)
+    skills = identify_skill_gaps(text, job_description, domain=domain)
+
+    reset_runtime_groups()
 
     dimensions = [
         {"name": "ATS Compatibility", "key": "ats", "score": ats["score"], "max": 100},

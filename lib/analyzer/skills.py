@@ -1,11 +1,48 @@
 import re
 from collections import Counter
-from typing import Optional
+from typing import Optional, List
 
-from lib.data.skills_ontology import FLAT_SKILLS, SKILLS_LOWER
+from lib.data.skills_ontology import FLAT_SKILLS
+from lib.data.domains import get_skills_categories_for_domain
+from lib.data.acronyms import expand_terms
 
 
-def identify_skill_gaps(resume_text: str, job_description: Optional[str]) -> dict:
+def _get_active_skills(domain: Optional[str]) -> List[str]:
+    cats = get_skills_categories_for_domain(domain)
+    if cats is None:
+        return FLAT_SKILLS
+    from lib.data.skills_ontology import SKILLS_ONTOLOGY
+    filtered = set()
+    for cat in cats:
+        filtered.update(SKILLS_ONTOLOGY.get(cat, []))
+    return sorted(filtered)
+
+
+def _count_in_text(forms: set[str], text: str) -> int:
+    total = 0
+    for form in forms:
+        if " " in form:
+            total += text.count(form)
+        else:
+            total += len(re.findall(r"\b" + re.escape(form) + r"\b", text))
+    return total
+
+
+def _exists_in_text(forms: set[str], text: str, words_set: set[str]) -> bool:
+    for form in forms:
+        if " " in form:
+            if form in text:
+                return True
+            form_words = set(form.split())
+            if form_words.issubset(words_set):
+                return True
+        else:
+            if re.search(r"\b" + re.escape(form) + r"\b", text):
+                return True
+    return False
+
+
+def identify_skill_gaps(resume_text: str, job_description: Optional[str], domain: Optional[str] = None) -> dict:
     if not job_description or not job_description.strip():
         return {
             "score": None,
@@ -14,23 +51,26 @@ def identify_skill_gaps(resume_text: str, job_description: Optional[str]) -> dic
             "message": "No job description provided. Skill gap analysis skipped."
         }
 
+    active_skills = _get_active_skills(domain)
+
     resume_lower = resume_text.lower()
+    resume_words = set(re.findall(r"\b[a-z+#.]+\b", resume_lower))
+    jd_lower = job_description.lower()
+
+    skill_expansions = {}
+    for skill in active_skills:
+        skill_expansions[skill] = expand_terms({skill})
 
     found_in_resume = set()
-    for skill in FLAT_SKILLS:
-        skill_lower = skill.lower()
-        if skill_lower in resume_lower:
+    for skill in active_skills:
+        forms = skill_expansions[skill]
+        if _exists_in_text(forms, resume_lower, resume_words):
             found_in_resume.add(skill)
-        elif " " in skill:
-            words = set(skill_lower.split())
-            if words.issubset(set(re.findall(r"\b[a-z+#.]+\b", resume_lower))):
-                found_in_resume.add(skill)
 
-    jd_lower = job_description.lower()
     jd_skill_counts = Counter()
-    for skill in FLAT_SKILLS:
-        skill_lower = skill.lower()
-        count = len(re.findall(re.escape(skill_lower), jd_lower))
+    for skill in active_skills:
+        forms = skill_expansions[skill]
+        count = _count_in_text(forms, jd_lower)
         if count > 0:
             jd_skill_counts[skill] = count
 
@@ -44,10 +84,11 @@ def identify_skill_gaps(resume_text: str, job_description: Optional[str]) -> dic
 
     priority_missing = []
     for skill in missing:
-        priority = "high" if jd_skill_counts[skill] >= 3 else "medium" if jd_skill_counts[skill] >= 2 else "low"
+        mentions = jd_skill_counts[skill]
+        priority = "high" if mentions >= 3 else "medium" if mentions >= 2 else "low"
         priority_missing.append({
             "skill": skill,
-            "mentions_in_jd": jd_skill_counts[skill],
+            "mentions_in_jd": mentions,
             "priority": priority,
         })
 
@@ -57,10 +98,8 @@ def identify_skill_gaps(resume_text: str, job_description: Optional[str]) -> dic
         skills_list = ", ".join(s["skill"] for s in high_priority[:5])
         suggestions.append(f"Critical skills to add: {skills_list}")
 
-    score = match_percentage
-
     return {
-        "score": score,
+        "score": match_percentage,
         "matched_skills": [{"skill": s, "mentions_in_jd": jd_skill_counts[s]} for s in matched[:20]],
         "missing_skills": priority_missing,
         "total_required": total_required,

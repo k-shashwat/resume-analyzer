@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 
 interface UploadZoneProps {
-  onAnalyze: (file: File, jobDescription: string) => void
+  onAnalyze: (file: File, jobDescription: string, domain: string) => void
   loading: boolean
   error: string | null
 }
@@ -15,9 +15,36 @@ interface UploadZoneProps {
 const MAX_FILE_SIZE = 5 * 1024 * 1024
 const ALLOWED_TYPES = [".pdf", ".docx"]
 
+const DOMAINS = [
+  { key: "all", label: "Auto-detect (all domains)" },
+  { key: "tech", label: "Technology & Software" },
+  { key: "cloud", label: "Cloud & Infrastructure" },
+  { key: "data", label: "Data & Analytics" },
+  { key: "finance", label: "Banking & Finance" },
+  { key: "insurance", label: "Insurance" },
+  { key: "marketing", label: "Marketing & Sales" },
+  { key: "healthcare", label: "Healthcare & Pharma" },
+  { key: "engineering", label: "Engineering & Manufacturing" },
+  { key: "automotive", label: "Automotive" },
+  { key: "operations", label: "Operations & Supply Chain" },
+  { key: "legal", label: "Legal & Regulatory" },
+  { key: "hr", label: "HR & Recruitment" },
+  { key: "creative", label: "Creative & Design" },
+  { key: "education", label: "Education & Research" },
+  { key: "government", label: "Government & Public Sector" },
+  { key: "realestate", label: "Real Estate & Construction" },
+  { key: "energy", label: "Energy & Utilities" },
+  { key: "retail", label: "Retail & E-Commerce" },
+  { key: "media", label: "Media & Entertainment" },
+  { key: "hospitality", label: "Hospitality & Tourism" },
+  { key: "agriculture", label: "Agriculture & Food" },
+  { key: "aviation", label: "Aviation & Aerospace" },
+]
+
 export function UploadZone({ onAnalyze, loading, error }: UploadZoneProps) {
   const [file, setFile] = useState<File | null>(null)
   const [jobDescription, setJobDescription] = useState("")
+  const [domain, setDomain] = useState("all")
   const [dragOver, setDragOver] = useState(false)
   const [localError, setLocalError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -59,7 +86,7 @@ export function UploadZone({ onAnalyze, loading, error }: UploadZoneProps) {
 
   function handleSubmit() {
     if (!file) return
-    onAnalyze(file, jobDescription)
+    onAnalyze(file, jobDescription, domain)
   }
 
   function clearFile() {
@@ -140,6 +167,22 @@ export function UploadZone({ onAnalyze, loading, error }: UploadZoneProps) {
           )}
         </div>
       )}
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-foreground">
+          Industry Domain{" "}
+          <span className="text-muted-foreground font-normal">(narrows search)</span>
+        </label>
+        <select
+          value={domain}
+          onChange={(e) => setDomain(e.target.value)}
+          className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        >
+          {DOMAINS.map((d) => (
+            <option key={d.key} value={d.key}>{d.label}</option>
+          ))}
+        </select>
+      </div>
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">

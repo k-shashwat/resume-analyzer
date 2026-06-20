@@ -12,7 +12,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   const [progress, setProgress] = useState("")
 
-  async function handleAnalyze(file: File, jobDescription: string) {
+  async function handleAnalyze(file: File, jobDescription: string, domain: string) {
     setLoading(true)
     setError(null)
     setResult(null)
@@ -23,6 +23,9 @@ export default function Home() {
     formData.append("file", file)
     if (jobDescription.trim()) {
       formData.append("job_description", jobDescription.trim())
+    }
+    if (domain && domain !== "all") {
+      formData.append("domain", domain)
     }
 
     try {

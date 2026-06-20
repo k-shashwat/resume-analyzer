@@ -1,7 +1,10 @@
 import re
+from collections import Counter
 from typing import Optional
 
 import spacy
+
+from lib.data.acronyms import expand_terms
 
 nlp = None
 
@@ -22,52 +25,75 @@ STOP_WORDS = {"the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for
               "through", "during", "without", "within", "along", "among",
               "such", "each", "all", "any", "both", "few", "more", "most",
               "other", "some", "only", "own", "same", "so", "up", "out",
-              "if", "now", "well", "etc"}
+              "if", "now", "well", "etc",
+              "high", "low", "large", "small", "able", "new", "old",
+              "good", "better", "best", "potential", "key", "plus",
+              "role", "part", "team", "set", "use", "need", "way",
+              "lot", "bit"}
 
 
-def _extract_keywords(text: str) -> set:
+MIN_TERM_LENGTH = 3
+
+def _extract_noun_phrases(text: str) -> set:
     nlp_obj = _get_nlp()
-    doc = nlp_obj(text.lower())
-    keywords = set()
-
-    i = 0
+    doc = nlp_obj(text)
+    phrases = set()
     tokens = list(doc)
+    i = 0
     while i < len(tokens):
         token = tokens[i]
-        if token.pos_ in ("NOUN", "PROPN", "ADJ") and token.lemma_ not in STOP_WORDS and len(token.lemma_) > 1:
-            phrase = [token.lemma_]
+        lemma = token.lemma_.lower()
+        if token.pos_ in ("NOUN", "PROPN", "ADJ") and lemma not in STOP_WORDS and len(lemma) >= MIN_TERM_LENGTH:
+            phrase = [lemma]
             j = i + 1
-            while j < len(tokens) and tokens[j].pos_ in ("NOUN", "PROPN", "ADJ") and len(tokens[j].lemma_) > 1:
-                phrase.append(tokens[j].lemma_)
+            while j < len(tokens) and tokens[j].pos_ in ("NOUN", "PROPN", "ADJ") and tokens[j].lemma_.lower() not in STOP_WORDS and len(tokens[j].lemma_) >= MIN_TERM_LENGTH:
+                phrase.append(tokens[j].lemma_.lower())
                 j += 1
-            keywords.add(" ".join(phrase))
+            if len(phrase) >= 2:
+                phrases.add(" ".join(phrase))
             i = j
         else:
             i += 1
-
-    keywords.update(
-        token.lemma_ for token in doc
-        if token.pos_ in ("NOUN", "PROPN", "VERB")
-        and token.lemma_ not in STOP_WORDS
-        and len(token.lemma_) > 1
-    )
-
-    return keywords
+    return phrases
 
 
-def _extract_multi_word_phrases(text: str) -> set:
+def _extract_noun_chunks(text: str) -> set:
     nlp_obj = _get_nlp()
-    doc = nlp_obj(text.lower())
+    doc = nlp_obj(text)
     phrases = set()
-
     for chunk in doc.noun_chunks:
         cleaned = chunk.text.strip()
         if len(cleaned.split()) >= 2:
-            words = [t.lemma_ for t in chunk if t.pos_ in ("NOUN", "PROPN", "ADJ")]
+            words = [t.lemma_.lower() for t in chunk if t.pos_ in ("NOUN", "PROPN", "ADJ") and len(t.lemma_) >= MIN_TERM_LENGTH]
             if len(words) >= 2:
                 phrases.add(" ".join(words))
-
     return phrases
+
+
+def _extract_single_keywords(text: str) -> dict[str, int]:
+    nlp_obj = _get_nlp()
+    doc = nlp_obj(text)
+    freq = Counter()
+    for token in doc:
+        lemma = token.lemma_.lower()
+        if (token.pos_ in ("NOUN", "PROPN", "ADJ")
+                and lemma not in STOP_WORDS
+                and len(lemma) >= MIN_TERM_LENGTH):
+            freq[lemma] += 1
+    return dict(freq)
+
+
+def _deduplicate_acronyms(terms: set[str]) -> set[str]:
+    expanded = expand_terms(terms)
+    deduped = set()
+    consumed = set()
+    for term in sorted(expanded, key=lambda t: (-len(t), t)):
+        if term in consumed:
+            continue
+        deduped.add(term)
+        equivalents = expand_terms({term})
+        consumed |= equivalents
+    return deduped
 
 
 def match_keywords(resume_text: str, job_description: Optional[str]) -> dict:
@@ -81,48 +107,59 @@ def match_keywords(resume_text: str, job_description: Optional[str]) -> dict:
             "message": "No job description provided. Keyword matching skipped."
         }
 
-    jd_keywords = _extract_keywords(job_description)
-    jd_phrases = _extract_multi_word_phrases(job_description)
+    jd_phrases = _extract_noun_phrases(job_description)
+    jd_chunks = _extract_noun_chunks(job_description)
+    jd_multi = jd_phrases | jd_chunks
 
-    all_jd_terms = jd_keywords | jd_phrases
+    jd_singles = _extract_single_keywords(job_description)
+    jd_singles_filtered = {w for w, c in jd_singles.items() if c >= 2}
+
+    jd_terms = jd_multi | jd_singles_filtered
+    jd_terms = _deduplicate_acronyms(jd_terms)
 
     resume_lower = resume_text.lower()
-    resume_words = set(re.findall(r"\b[a-z]+\b", resume_lower))
+    resume_words = set(re.findall(r"\b[a-z+#.]+\b", resume_lower))
 
     nlp_obj = _get_nlp()
     resume_doc = nlp_obj(resume_lower)
-    resume_lemmas = {t.lemma_ for t in resume_doc if len(t.lemma_) > 1}
+    resume_lemmas = {t.lemma_.lower() for t in resume_doc if len(t.lemma_) > 1}
+    resume_lookup = resume_words | resume_lemmas
+
+    jd_expanded_lookup = {}
+    for jd_term in jd_terms:
+        jd_expanded_lookup[jd_term] = expand_terms({jd_term})
 
     matched = []
     missing = []
 
-    for term in sorted(all_jd_terms):
-        if not term or len(term) < 2:
+    for jd_term in sorted(jd_terms):
+        if not jd_term or len(jd_term) < 2:
             continue
-        term_lower = term.lower()
-
-        if " " in term:
-            if term_lower in resume_lower:
-                matched.append({"keyword": term, "type": "phrase"})
-                continue
-            term_words = set(term.split())
-            if term_words.issubset(resume_words):
-                matched.append({"keyword": term, "type": "phrase"})
-                continue
+        expanded_forms = jd_expanded_lookup.get(jd_term, {jd_term})
+        is_match = False
+        for form in expanded_forms:
+            if " " in form:
+                if form in resume_lower:
+                    is_match = True
+                    break
+                form_words = set(form.split())
+                if form_words.issubset(resume_lookup):
+                    is_match = True
+                    break
+            else:
+                if form in resume_lookup:
+                    is_match = True
+                    break
+        if is_match:
+            matched.append({"keyword": jd_term, "type": "phrase" if " " in jd_term else "single"})
         else:
-            if term_lower in resume_lemmas or term_lower in resume_words:
-                matched.append({"keyword": term, "type": "single"})
-                continue
+            missing.append({"keyword": jd_term, "type": "phrase" if " " in jd_term else "single"})
 
-        missing.append({"keyword": term, "type": "phrase" if " " in term else "single"})
-
-    total = len(all_jd_terms)
+    total = len(jd_terms)
     match_percentage = round(len(matched) / total * 100) if total > 0 else 0
 
-    score = match_percentage
-
     return {
-        "score": score,
+        "score": match_percentage,
         "matched_keywords": matched,
         "missing_keywords": missing,
         "total_keywords": total,
